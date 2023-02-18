@@ -4,7 +4,7 @@ Based off beam_test.py
 
 Author: Amanda Steinhebel
 
-02/2023 Jihee Kim added noise scan summary
+02/2023 Jihee Kim added noise scan summary based on example_loop.py
 """
 
 #from msilib.schema import File
@@ -119,7 +119,8 @@ def main(args,row,col,injectPix):
     bitfile.write("\n")
 
     try: # By enclosing the main loop in try/except we are able to capture keyboard interupts cleanly
-       
+
+        n_noise=0 # How many interrupts occurring during maximum run time per pixel
         while (True): # Loop continues 
 
             # Break conditions
@@ -151,6 +152,7 @@ def main(args,row,col,injectPix):
 
                 finally:
                     i += 1
+                    n_noise += 1
 
                     # If we are saving a csv this will write it out. 
                     if args.saveascsv:
@@ -159,7 +161,8 @@ def main(args,row,col,injectPix):
             # If no hits are present this waits for some to accumulate
             else: time.sleep(.001)
 
-
+        noisefile.write(f"{col},{row},{n_noise}\n")
+        noisefile.flush()
     # Ends program cleanly when a keyboard interupt is sent.
     except KeyboardInterrupt:
         logger.info("Keyboard interupt. Program halt!")
@@ -233,9 +236,17 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
 
+    # Save noise summary to output file
+    noisepath = args.outdir + '/' + 'noise_scan_summary_' + fname + time.strftime("%Y%m%d-%H%M%S") + '.csv'
+    noisefile = open(noisepath,'w')
+    noisewriter = csv.writer(noisefile)
+    noiseheader = ['Col', 'Row', 'Count']
+    noisewriter.writerow(noiseheader)
+
     #loop over full array by default, unless bounds are given as argument
     for r in range(args.rowrange[0],args.rowrange[1]+1,1):
         for c in range(args.colrange[0],args.colrange[1]+1,1):
             injectPix=[r,c]
             main(args,r,c,injectPix)
             time.sleep(2) # to avoid loss of connection to Nexys
+    noisefile.close()
