@@ -160,7 +160,8 @@ def main(args,row,col,injectPix):
 
             # If no hits are present this waits for some to accumulate
             else: time.sleep(.001)
-
+        
+        # Write noise scan summary per pixel
         noisefile.write(f"{col},{row},{n_noise}\n")
         noisefile.flush()
     # Ends program cleanly when a keyboard interupt is sent.
@@ -249,4 +250,6 @@ if __name__ == "__main__":
             injectPix=[r,c]
             main(args,r,c,injectPix)
             time.sleep(2) # to avoid loss of connection to Nexys
+    
+    # Close noise scan summary file
     noisefile.close()
