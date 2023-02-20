@@ -4,6 +4,9 @@ Loop over full array and record from each pixel individually.
 Based off beam_test.py and example_loop.py
 
 Author: Amanda Steinhebel
+
+02/2023 Jihee Kim fixed injection enabled
+        example) python3.9 pixelScan_injection.py -n "filename" -C 0 0 -R 0 0 -v 300.
 """
 
 from astropix import astropix2
@@ -58,7 +61,7 @@ def main(args,row,col, fpgaCon:bool=True, fpgaDiscon:bool=True):
     astro.enable_pixel(col,row)
 
     #If injection, ensure injection pixel is enabled and initialize
-    if boolInj is not None:
+    if boolInj:
         astro.enable_injection(col,row)
         astro.init_injection(inj_voltage=args.vinj)
 
@@ -66,14 +69,14 @@ def main(args,row,col, fpgaCon:bool=True, fpgaDiscon:bool=True):
     logger.info("Chip configured")
     astro.dump_fpga()
 
-    if boolInj is not None:
+    if boolInj:
         astro.start_injection()
 
     i=0
     if args.maxtime is not None: 
         end_time=time.time()+(args.maxtime*60.)
     strPix = "_col"+str(col)+"_row"+str(row)+"_"
-    fname=strPix if not args.name else args.name+strPix+"_"
+    fname=strPix if not args.name else args.name+strPix
 
     # Prepares the file paths 
     if args.saveascsv: # Here for csv
@@ -140,7 +143,7 @@ def main(args,row,col, fpgaCon:bool=True, fpgaDiscon:bool=True):
         if args.saveascsv: 
             csvframe.index.name = "dec_order"
             csvframe.to_csv(csvpath) 
-        if boolInj is not None: astro.stop_injection() 
+        if boolInj: astro.stop_injection() 
         bitfile.close() # Close open file       
         if fpgaDiscon:
             astro.close_connection() # Closes SPI
@@ -177,8 +180,7 @@ if __name__ == "__main__":
                     
     parser.add_argument('-v','--vinj', action='store', default = None, type=float,
                     help = 'Specify injection voltage (in mV) to turn on injection. If argument not used, injection not enabled. DEFAULT None')
-    parser.add_argument('-c', '--saveascsv', action='store_true', 
-                    default=False, required=False, 
+    parser.add_argument('-c', '--saveascsv', action='store_true', default=False, required=False, 
                     help='save output files as CSV. If False, save as txt. Default: FALSE')
     
 
