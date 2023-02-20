@@ -239,7 +239,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     # Save noise summary to output file
-    noisepath = args.outdir + '/' + 'noise_scan_summary_' + fname + time.strftime("%Y%m%d-%H%M%S") + '.csv'
+    noisepath = args.outdir + '/' + 'noise_scan_summary_' + args.name + '_' + time.strftime("%Y%m%d-%H%M%S") + '.csv'
     noisefile = open(noisepath,'w')
     noisewriter = csv.writer(noisefile)
     noisewriter.writerow(["Col", "Row", "Count"])
