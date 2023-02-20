@@ -157,3 +157,14 @@ Options:
 | `--timeit` | `--timeit`           | Measures the time it took to decode and store a hitstream. | Off |
 
 
+Example - Run Scripts
+---------------------
+  - Digital Noise Scan pixel by pixel
+```bash
+python3.9 noise_scan.py -n "filename" -o./outputdirectory -c -M 0.084 -C 0 34 -R 0 34
+```
+
+  - Pixel Scan with Injection
+```bash
+python3.9 pixelScan_injection.py -n "filename" -C 0 0 -R 0 0 -v 300.0
+```
