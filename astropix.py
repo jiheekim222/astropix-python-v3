@@ -127,7 +127,7 @@ class astropix2:
         self.asic.chipversion=2
         #Define YAML path variables
         pathdelim=os.path.sep #determine if Mac or Windows separators in path name
-        ymlpath="."+pathdelim+"config"+pathdelim+yaml+".yml"
+        ymlpath=yaml
         try:
             self.asic.load_conf_from_yaml(self.asic.chipversion, ymlpath)
         except Exception:
