@@ -241,8 +241,7 @@ if __name__ == "__main__":
     noisepath = args.outdir + '/' + 'noise_scan_summary_' + fname + time.strftime("%Y%m%d-%H%M%S") + '.csv'
     noisefile = open(noisepath,'w')
     noisewriter = csv.writer(noisefile)
-    noiseheader = ['Col', 'Row', 'Count']
-    noisewriter.writerow(noiseheader)
+    noisewriter.writerow(["Col", "Row", "Count"])
 
     #loop over full array by default, unless bounds are given as argument
     for r in range(args.rowrange[0],args.rowrange[1]+1,1):
