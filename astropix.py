@@ -4,6 +4,8 @@ The class methods of all the other modules/cores are inherited here.
 
 Author: Autumn Bauman
 Maintained by: Amanda Steinhebel, amanda.l.steinhebel@nasa.gov
+
+02/2023 Jihee Kim added disable_pixel definition
 """
 # Needed modules. They all import their own suppourt libraries, 
 # and eventually there will be a list of which ones are needed to run
@@ -157,6 +159,9 @@ class astropix2:
     #Interface with asic.py 
     def enable_pixel(self, col: int, row: int, inplace:bool=True):
        self.asic.enable_pixel(col, row, inplace)
+
+    def disable_pixel(self, col: int, row: int, inplace:bool=True):
+       self.asic.disable_pixel(col, row, inplace)
 
     #Turn on injection of different pixel than the one used in _init_
     def enable_injection(self, col:int, row:int, inplace:bool=True):
