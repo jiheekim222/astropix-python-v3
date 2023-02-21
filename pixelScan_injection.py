@@ -72,6 +72,37 @@ def main(args,row,col, fpgaCon:bool=True, fpgaDiscon:bool=True):
     if boolInj:
         astro.start_injection()
 
+    ##################################################
+    # Read noise scan summary file
+    noise_input_file = open(args.noisescaninfo, 'r')
+    lines = noise_input_file.readlines()
+    #print(lines[0])
+    del lines[0] # remove header
+
+    # Get counts
+    count_vals=[]
+    for line in lines:
+        count_vals.append(int(line.split(',')[2]))
+    #print(count_vals)
+
+    # threshold to define masking
+    threshold = 100 # assume random number
+    
+    #loop over full array
+    col=0
+    row=0
+    for r in range(len(count_vals)):
+        #print(count_vals[r])
+        if count_vals[r] >= threshold:
+            row = int(r/35.)
+            col = int(r%35.)
+            #print(count_vals[r],row,col,"noisy")
+            #Enable single pixel in (col,row)
+            astro.disable_pixel(col,row)
+        else:
+            astro.enable_pixel(col,row)
+    ##################################################
+
     i=0
     if args.maxtime is not None: 
         end_time=time.time()+(args.maxtime*60.)
@@ -182,6 +213,8 @@ if __name__ == "__main__":
                     help = 'Specify injection voltage (in mV) to turn on injection. If argument not used, injection not enabled. DEFAULT None')
     parser.add_argument('-c', '--saveascsv', action='store_true', default=False, required=False, 
                     help='save output files as CSV. If False, save as txt. Default: FALSE')
+    parser.add_argument('-ns', '--noisescaninfo', action='store', required=False, type=str, default = 'example_noise_scan_summary.csv',
+                    help = 'filepath noise scan summary file containing chip noise infomation.')
     
 
     parser.add_argument

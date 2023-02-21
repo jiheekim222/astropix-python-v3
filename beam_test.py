@@ -3,6 +3,8 @@ Updated version of beam_test.py using the astropix.py module
 
 Author: Autumn Bauman 
 Maintained by: Amanda Steinhebel, amanda.l.steinhebel@nasa.gov
+
+02/2023 Jihee Kim added masking pixels based on noise scan info
 """
 
 #from msilib.schema import File
@@ -60,39 +62,7 @@ def main(args):
     astro.init_voltages(vthreshold=args.threshold) #no updates in YAML
 
     #Initiate asic with pixel mask as defined in yaml and analog pixel in row0 defined with input argument -a
-    astro.asic_init(yaml=args.yaml, analog_col = args.analog)
-
-    with open(args.noisescaninfo, 'r') as noisescanfile:
-        csvreader = csv.reader(noisescanfile, delimiter=',')
-        for row in csvreader:
-            print(row)
-
-    # Read noise scan summary file
-    noise_input_file = open(args.noisescaninfo, 'r')
-    lines = noise_input_file.readlines()
-    print(lines[0])
-    del lines[0] # remove header
-
-    # Get counts
-    count_vals=[]
-    for line in lines:
-        count_vals.append(int(line.split(',')[2]))
-    print(count_vals)
-
-    # threshold to define masking
-    threshold = 195 # assume 200 max
-    
-    #loop over full array
-    for r in range(len(count_vals)):
-        print(count_vals[r])
-        if count_vals[r] > threshold:
-            row = int(r/35.)
-            col = int(r%35.)
-            print(count_vals[r],row,col,"noisy")
-            #Enable single pixel in (col,row)
-            astro.disable_pixel(col,row)
-        else
-            astro.enable_pixel(col,row)
+    astro.asic_init(yaml='./config/'+args.yaml+'.yml', analog_col = args.analog)
 
     #If injection, ensure injection pixel is enabled and initialize
     if args.inject:
@@ -106,8 +76,48 @@ def main(args):
 
     if args.inject is not None:
         astro.start_injection()
+    
+    # Masking pixels
+    # Read noise scan summary file
+    noise_input_file = open(args.noisescaninfo, 'r')
+    lines = noise_input_file.readlines()
+    #print(lines[0])
+    del lines[0] # remove header
 
+    # Get counts
+    count_vals=[]
+    for line in lines:
+        noise_val = int(line.split(',')[2])
+        col_val = int(line.split(',')[0])
+        row_val = int(line.split(',')[1])
+        if noise_val > 5:
+            astro.disable_pixel(col_val,row_val)
+        else:
+            astro.enable_pixel(col_val,row_val)
+        
+    #print(count_vals)
+    """
+    # threshold to define masking
+    threshold = 2 # assume random number
 
+    #loop over full array
+    col=0
+    row=0
+    for r in range(len(count_vals)):
+        #print(count_vals[r])
+        if count_vals[r] >= threshold:
+            row = int(r/35.)
+            col = int(r%35.)
+            #print(count_vals[r],row,col,"noisy")
+            #Enable single pixel in (col,row)
+            astro.disable_pixel(col,row)
+        else:
+            astro.enable_pixel(col,row)
+
+    for r in range(0,35,1):
+        for c in range(0,35,1):
+            astro.enable_pixel(c,r)
+    """
     max_errors = args.errormax
     i = 0
     errors = 0 # Sets the threshold 
@@ -135,7 +145,7 @@ def main(args):
     # Save final configuration to output file    
     ymlpathout=args.outdir +"/"+args.yaml+"_"+time.strftime("%Y%m%d-%H%M%S")+".yml"
     astro.write_conf_to_yaml(ymlpathout)
-    # Prepare text files/logs
+    # Prepinvertare text files/logs
     bitpath = args.outdir + '/' + fname + time.strftime("%Y%m%d-%H%M%S") + '.log'
     # textfiles are always saved so we open it up 
     bitfile = open(bitpath,'w')
@@ -165,7 +175,7 @@ def main(args):
                 time.sleep(.001) # this is probably not needed, will ask Nicolas
 
                 readout = astro.get_readout(3) # Gets the bytearray from the chip
-
+                
                 if args.timeit:
                     print(f"Readout took {(time.time_ns()-start)*10**-9}s")
 
@@ -194,7 +204,7 @@ def main(args):
                     # If we are saving a csv this will write it out. 
                     if args.saveascsv:
                         csvframe = pd.concat([csvframe, hits])
-
+                        print(hits)
                     # This handels the hitplotting. Code by Henrike and Amanda
                     if args.showhits:
                         # This ensures we aren't plotting NaN values. I don't know if this would break or not but better 
@@ -203,7 +213,7 @@ def main(args):
                             pass
                         elif len(hits)>0:#safeguard against bad readouts without recorded decodable hits
                             #Isolate row and column information from array returned from decoder
-                            rows = hits.location[~hits.isCol]
+                            rows = hits.location[hits.isCol]
                             columns = hits.location[hits.isCol]
                             plotter.plot_event( rows, columns, i)
 
@@ -230,7 +240,6 @@ def main(args):
         astro.close_connection() # Closes SPI
         logger.info("Program terminated successfully")
     # END OF PROGRAM
-
     
 
 if __name__ == "__main__":
