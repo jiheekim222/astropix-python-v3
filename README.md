@@ -168,3 +168,8 @@ python3.9 noise_scan.py -n "filename" -o./outputdirectory -c -M 0.084 -C 0 34 -R
 ```bash
 python3.9 pixelScan_injection.py -n "filename" -C 0 0 -R 0 0 -v 300.0
 ```
+
+  - Beam Measurement with Masking
+```bash
+python3.9 beam_test.py -n "filename" -o ./outputdirectory -y testconfig -ns ./noise_scan.csv -c -t 200.0 -L W
+```
