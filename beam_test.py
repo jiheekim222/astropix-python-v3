@@ -16,6 +16,7 @@ import numpy as np
 import time
 import logging
 import argparse
+import csv
 
 from modules.setup_logger import logger
 
@@ -61,8 +62,40 @@ def main(args):
     #Initiate asic with pixel mask as defined in yaml and analog pixel in row0 defined with input argument -a
     astro.asic_init(yaml=args.yaml, analog_col = args.analog)
 
+    with open(args.noisescaninfo, 'r') as noisescanfile:
+        csvreader = csv.reader(noisescanfile, delimiter=',')
+        for row in csvreader:
+            print(row)
+
+    # Read noise scan summary file
+    noise_input_file = open(args.noisescaninfo, 'r')
+    lines = noise_input_file.readlines()
+    print(lines[0])
+    del lines[0] # remove header
+
+    # Get counts
+    count_vals=[]
+    for line in lines:
+        count_vals.append(int(line.split(',')[2]))
+    print(count_vals)
+
+    # threshold to define masking
+    threshold = 195 # assume 200 max
+    
+    #loop over full array
+    for r in range(len(count_vals)):
+        print(count_vals[r])
+        if count_vals[r] > threshold:
+            row = int(r/35.)
+            col = int(r%35.)
+            print(count_vals[r],row,col,"noisy")
+            #Enable single pixel in (col,row)
+            astro.disable_pixel(col,row)
+        else
+            astro.enable_pixel(col,row)
+
     #If injection, ensure injection pixel is enabled and initialize
-    if args.inject is not None:
+    if args.inject:
         astro.enable_pixel(args.inject[1],args.inject[0])    
         astro.init_injection(inj_voltage=args.vinj)
 
@@ -198,7 +231,6 @@ def main(args):
         logger.info("Program terminated successfully")
     # END OF PROGRAM
 
-
     
 
 if __name__ == "__main__":
@@ -212,6 +244,9 @@ if __name__ == "__main__":
 
     parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig',
                     help = 'filepath (in config/ directory) .yml file containing chip configuration. Default: config/testconfig.yml (All pixels off)')
+
+    parser.add_argument('-ns', '--noisescaninfo', action='store', required=False, type=str, default = 'example_noise_scan_summary.csv',
+                    help = 'filepath noise scan summary file containing chip noise infomation.')
 
     parser.add_argument('-s', '--showhits', action='store_true',
                     default=False, required=False,
