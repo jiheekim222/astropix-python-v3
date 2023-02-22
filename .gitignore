@@ -140,6 +140,9 @@ cython_debug/
 #pylint
 .pylint.d/
 
+# OS generated files#
+#####################
+.DS_Store
 
 new-sensor-test.py
 astropy_validation.py
