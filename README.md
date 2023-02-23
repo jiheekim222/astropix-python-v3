@@ -174,7 +174,7 @@ python3.9 pixelScan_injection.py -n "filename" -C 0 0 -R 0 0 -v 300.0
 python3.9 beam_test.py -n "filename" -o ./outputdirectory -y testconfig -ns ./noise_scan.csv -c -t 200.0 -L W
 ```
 
-  - Hit Plot per event
+  - Pixel Hit Plot per Run (Beam measurement)
 ```bash
-python3.10 plot_hits_v2.py -df ./beam_measurement.csv -o ./outputdirectory -evt 2
+python3.10 plot_hits.py -df "./beam_measurement.csv" -o "./outputdirectory" -rn 1 -n "protons120"
 ```
