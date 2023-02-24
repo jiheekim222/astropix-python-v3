@@ -181,10 +181,11 @@ python3.10 plot_hits.py -df "./beam_measurement.csv" -o "./outputdirectory" -rn 
 
 ## How to run beam measurement scripts at TestBeam
 
-### Step 1
-Find [beam measurement logbook] (in a format xlsx) through Argonne Box. (https://anl.box.com/s/41tpng6pd600mgh9r7cuqiqs1z43i52n)
+### Step 1 Find LogBook
+Find beam measurement logbook (in a format xlsx) through Argonne Box. (https://anl.box.com/s/41tpng6pd600mgh9r7cuqiqs1z43i52n)
+Other materials including beam profiles and noise scans can be found in (https://anl.app.box.com/folder/192431367188)
 
-### Step 2
+### Step 2 Log in Computer
 Log into a computer in enclosure remotely by
 ```
 ssh labadmin@mtestfedorapc.dhcp.fnal.gov
@@ -194,7 +195,7 @@ All scripts are stored in a directory
 cd /home/labadmin/AstropPix/astropix-python
 ```
 
-### Step 3
+### Step 3 Run Beam Measurement
 Run beam measurement script
 ```
 python3.9 beam_test.py -o "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103" -y testconfig -ns "/home/labadmin/AstropPix/BeamTest2023/NoiseScan/Chip_230103/noise_scan_summary_chip230208_20230220-012049.csv" -t 600.0 -L W -nt 5 -M 60 --ludicrousspeed -n "run22_proton120GeV"
@@ -207,7 +208,15 @@ python3.9 beam_test.py -o "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_2
 - option `-M`: maximum run time (in minutes)
 - **option `-n`: name of data output file**
 
-### Step 4
+### Step 4 Record Beam Profile
+Take screenshot of beamprofile from GxSA: Meson Line Profiles v8.24 by `Alt + Print Screen`. All screenshots are stored in `/home/nfs/ftbf_user/Pictures/`. You can find an example here (https://anl.box.com/s/yqkeppf8jyh6c9fr3ia7yomvr3o72812)
+
+Run below script of beam psotion on WC in a directory `/home/nfs/ftbf_user/FTBF-scripts/MWPC/`. All output figures are stored in `/home/nfs/ftbf_user/FTBF-scripts/MWPC/results/Figures/`. You can find an example here (https://anl.box.com/s/i4nuzsly7tatnx36z3ea4l21vr33z321)
+```
+./process_latest.sh
+```
+
+### Step 5 Run Decode Data (Post-Run)
 Run decode script (offline) after data-taken
 ```
 python3.9 decode_postRun.py -f "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103/run22_*.log" -o "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103" -L D -p
@@ -217,7 +226,7 @@ python3.9 decode_postRun.py -f "/home/labadmin/AstropPix/BeamTest2023/BeamData/C
 - option `-L`: log level DEBUG
 - option `-p`: Print decoded info into terminal
 
-### Step 4
+### Step 6 Make Figure (Post-Run)
 Run plot script
 ```
 python3.9 plot_hits.py -n "proton_120GeV_chip230103" -o "/home/labadmin/AstropPix/BeamTest2023/Plots" -d "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103" -l 22
