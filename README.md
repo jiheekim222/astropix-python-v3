@@ -178,3 +178,52 @@ python3.9 beam_test.py -n "filename" -o ./outputdirectory -y testconfig -ns ./no
 ```bash
 python3.10 plot_hits.py -df "./beam_measurement.csv" -o "./outputdirectory" -rn 1 -n "protons120"
 ```
+
+## How to run beam measurement scripts at TestBeam
+
+### Step 1
+Find [beam measurement logbook] (in a format xlsx) through Argonne Box. (https://anl.box.com/s/41tpng6pd600mgh9r7cuqiqs1z43i52n)
+
+### Step 2
+Log into a computer in enclosure remotely by
+```
+ssh labadmin@mtestfedorapc.dhcp.fnal.gov
+```
+All scripts are stored in a directory
+```
+cd /home/labadmin/AstropPix/astropix-python
+```
+
+### Step 3
+Run beam measurement script
+```
+python3.9 beam_test.py -o "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103" -y testconfig -ns "/home/labadmin/AstropPix/BeamTest2023/NoiseScan/Chip_230103/noise_scan_summary_chip230208_20230220-012049.csv" -t 600.0 -L W -nt 5 -M 60 --ludicrousspeed -n "run22_proton120GeV"
+```
+- option `-o`: directory where output data file is stored
+- option `-y`: configuration file of astropix chip
+- option `-ns`: input noise scan summary file to mask noisy pixels
+- option `-t`: threshold voltage for digital ToT (in mV)
+- option `-L`: log level WARNING
+- option `-M`: maximum run time (in minutes)
+- **option `-n`: name of data output file**
+
+### Step 4
+Run decode script (offline) after data-taken
+```
+python3.9 decode_postRun.py -f "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103/run22_*.log" -o "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103" -L D -p
+```
+- **option `-f`: input data file to decode** 
+- option `-o`: directory where decoded output data file is stored
+- option `-L`: log level DEBUG
+- option `-p`: Print decoded info into terminal
+
+### Step 4
+Run plot script
+```
+python3.9 plot_hits.py -n "proton_120GeV_chip230103" -o "/home/labadmin/AstropPix/BeamTest2023/Plots" -d "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103" -l 22
+```
+- option `-n`: name of histogram and output file
+- option `-o`: directory where output plot file is created
+- option `-d`: directory where decoded beam data is located
+- **option `-l`: run numbers of data that we would like to see**   ex) `-l 22` run22 only or `-l 20 21 22` run 20, 21, and 22 data combined
+
