@@ -221,9 +221,9 @@ python3.9 beam_test.py -o "/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_2
 
 ### Step 4 Record Beam Profile
 Take screenshot of beamprofile from GxSA: Meson Line Profiles v8.24 by `Alt + Print Screen`. All screenshots are stored in `/home/nfs/ftbf_user/Pictures/`. You can find an example here (https://anl.box.com/s/yqkeppf8jyh6c9fr3ia7yomvr3o72812)
-```
+
 At the begining of each run, please record the data from MWPC on the ftbf-cr-05. After run finishes, make the plots of the profile and put them to the Box in the directory measurements/BeamProfile. Refer to the instructions how to run the beam scan in https://anl.box.com/s/it15ejcoxm2hil1for09byczogue599e (also displayed on the dhcp computer)
-```
+
 
 ### Step 5 Run Decode Data (Post-Run)
 Run decode script (offline) after data-taken
