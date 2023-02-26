@@ -180,10 +180,9 @@ if __name__ == "__main__":
                     
     parser.add_argument('-v','--vinj', action='store', default = None, type=float,
                     help = 'Specify injection voltage (in mV) to turn on injection. If argument not used, injection not enabled. DEFAULT None')
+    
     parser.add_argument('-c', '--saveascsv', action='store_true', default=False, required=False, 
                     help='save output files as CSV. If False, save as txt. Default: FALSE')
-    parser.add_argument('-ns', '--noisescaninfo', action='store', required=False, type=str, default = 'example_noise_scan_summary.csv',
-                    help = 'filepath noise scan summary file containing chip noise infomation.')
     
 
     parser.add_argument

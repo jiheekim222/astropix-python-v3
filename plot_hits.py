@@ -33,7 +33,8 @@ def main(args):
    
     # List for hit pixels
     pair = []
-   
+    # How many events are used in plot
+    n_evt_used = 0 
     # Loop over readouts/events
     for ievt in range(0, max_n_readouts, 1):
         # Collect one event
@@ -50,6 +51,7 @@ def main(args):
         if n_no_good_decoding != 0:
             pass
         else:
+            n_evt_used += 1
             # List column info of pixel within one event
             dffcol = dff.loc[dff['isCol'] == True]
             # List row info of pixel within one event
@@ -65,12 +67,16 @@ def main(args):
                         # Record hit pixels per event
                         pair.append([dffcol['location'][indc], dffrow['location'][indr], dffcol['timestamp'][indc], dffrow['timestamp'][indr], dffcol['tot_us'][indc], dffrow['tot_us'][indr]])
 
+    # Calculate how many events are used
+    nevents = '%.2f' % ((n_evt_used/(max_n_readouts + 1)) * 100.)
     # Hit pixel information for all events
     dffpair = pd.DataFrame(pair, columns=['col', 'row', 'timestamp_col', 'timestamp_row', 'tot_us_col', 'tot_us_row'])
     # For heatmap plot, it needs col, row, and hits 
     dfpair = dffpair[['col','row']].copy()
     dfpairc = dfpair[['col','row']].value_counts().reset_index(name='hits')
     print(dfpairc.to_string())
+    # How many hits are collected and shown in a plot
+    nhits = dfpairc['hits'].sum()
 
     # Print run number(s)
     runnum = '-'.join(args.runnolist)
@@ -80,7 +86,10 @@ def main(args):
     fig.colorbar(p1[3], ax=ax1).set_label(label='Hits', size=15)
     ax1.set_xlabel('Col', fontsize=15)
     ax1.set_ylabel('Row', fontsize=15)
-    ax1.set_title(f"{args.name} Run {runnum}", fontsize=15)
+    if args.exclusively:
+        ax1.set_title(f"{args.beaminfo} {args.name} Run {runnum} ({nevents}%) \n {nhits} hits shown exclusively", fontsize=15)
+    else:
+        ax1.set_title(f"{args.beaminfo} {args.name} Run {runnum} ({nevents}%) \n {nhits} hits shown", fontsize=15)
 
     # Path to noise scan data location
     path = args.noisedir
@@ -99,18 +108,28 @@ def main(args):
     fig.colorbar(p2[3], ax=ax2).set_label(label='Masking', size=15)
     ax2.set_xlabel('Col', fontsize=15)
     ax2.set_ylabel('Row', fontsize=15)
-    ax2.set_title(f"{args.name} masking map \n with noise threshold {args.noisethreshold} ({npixels}%)", fontsize=15)
+    if args.exclusively:
+        ax2.set_title(f"{args.beaminfo} {args.name} masking map \n with noise threshold {args.noisethreshold} ({npixels}%)", fontsize=15)
+    else:
+        ax2.set_title(f"{args.beaminfo} {args.name} masking map \n with noise threshold {args.noisethreshold} ({npixels}%)", fontsize=15)
     # Generate Plot - Masking over Pixel Hits
-    plt.hist2d(x=dfnoise['Col'],y=dfnoise['Row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfnoise['Masking'], cmap='Greys', alpha=0.1)
+    #plt.hist2d(x=dfnoise['Col'],y=dfnoise['Row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfnoise['Masking'], cmap='Greys', alpha=0.1)
     p3 = plt.hist2d(x=dfpairc['col'],y=dfpairc['row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfpairc['hits'], cmap='YlOrRd',cmin=1.0, norm=matplotlib.colors.LogNorm())
+    plt.hist2d(x=dfnoise['Col'],y=dfnoise['Row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfnoise['Masking'], cmap='Greys', alpha=0.2)
     fig.colorbar(p3[3], ax=ax3).set_label(label='Hits', size=15)
     ax3.set_xlabel('Col', fontsize=15)
     ax3.set_ylabel('Row', fontsize=15)
-    ax3.set_title(f"{args.name} Run {runnum} with masking", fontsize=15)
+    if args.exclusively:
+        ax3.set_title(f"{args.beaminfo} {args.name} Run {runnum} with masking exclusively", fontsize=15)
+    else:
+        ax3.set_title(f"{args.beaminfo} {args.name} Run {runnum} with masking", fontsize=15)
     # Draw Plot
     plt.show()
     # Save figure
-    plt.savefig(f"{args.outdir}/{args.name}_run_{runnum}.png")
+    if args.exclusively:
+        plt.savefig(f"{args.outdir}/{args.beaminfo}_{args.name}_run_{runnum}_exclusively.png")
+    else:
+        plt.savefig(f"{args.outdir}/{args.beaminfo}_{args.name}_run_{runnum}.png")
 
     # END OF PROGRAM
     
@@ -118,9 +137,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Astropix Driver Code')
     parser.add_argument('-n', '--name', default='chip', required=True,
-                    help='chip ID that can be used in name of output file')
+                    help='chip ID that can be used in name of output file ex) chip230103 or APCv2-230202')
 
-    parser.add_argument('-o', '--outdir', default='/home/labadmin/AstropPix/BeamTest2023/Plots', required=True,
+    parser.add_argument('-o', '--outdir', default='/home/labadmin/AstropPix/BeamTest2023/Plots', required=False,
                     help='output directory for all png files')
 
     parser.add_argument('-d', '--datadir', required=True, default = '/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103',
@@ -135,6 +154,9 @@ if __name__ == "__main__":
     parser.add_argument('-t','--noisethreshold', type=int, required=True, default=5,
                     help = 'noise threshold to determine which pixel to be masked')
    
+    parser.add_argument('-b', '--beaminfo', default='proton_120GeV', required=False,
+                    help='beam information ex) proton_120GeV')
+    
     parser.add_argument('--exclusively', default=False, action='store_true', 
                     help='Throw entire data event if some within event has bad decoding')
 
