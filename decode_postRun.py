@@ -13,8 +13,26 @@ import numpy as np
 import logging
 import argparse
 import re
+import time
 
 from modules.setup_logger import logger
+
+# This is the dataframe which is written to the csv if the decoding fails
+decode_fail_frame = pd.DataFrame({
+                'readout': np.nan,
+                'Chip ID': np.nan,
+                'payload': np.nan,
+                'location': np.nan,
+                'isCol': np.nan,
+                'timestamp': np.nan,
+                'tot_msb': np.nan,
+                'tot_lsb': np.nan,
+                'tot_total': np.nan,
+                'tot_us': np.nan,
+                'hittime': np.nan
+                }, index=[0]
+)
+
 
 #Initialize
 def main(args):
@@ -72,16 +90,31 @@ def main(args):
 
         #isolate only bitstream without b'...' structure 
         strings = [a[2:-1] for a in f[:,1]]
+        #print(strings)
+
+        i = 0
+        errors=0
 
         for s in strings:
             #convert hex to binary and decode
             rawdata = list(binascii.unhexlify(s))
-            hits = astro.decode_readout(rawdata, 0, printer = args.printDecode)
-            #Overwrite hittime - computed during decoding
-            hits['hittime']=np.nan
-            #Populate csv
-            csvframe = pd.concat([csvframe, hits])
-
+            #print(rawdata)
+            try:
+                hits = astro.decode_readout(rawdata, i, printer = args.printDecode)
+                #print(hits)
+                hits.hittime = time.time()
+            except IndexError:
+                errors += 1
+                logger.warning(f"Decoding failed. Failure {errors} on readout {i}")
+                hits = decode_fail_frame
+                #hits.rawdata = i
+                hits['hittime']=np.nan
+            finally:
+                i += 1
+                #Overwrite hittime - computed during decoding
+                #Populate csv
+                csvframe = pd.concat([csvframe, hits])
+                #csvframe.readout = csvframe.readout.astype(int)
         #Save csv
         logger.info(f"Saving to {csvpath}")
         csvframe.to_csv(csvpath)
@@ -102,8 +135,10 @@ if __name__ == "__main__":
     parser.add_argument('-L', '--loglevel', type=str, choices = ['D', 'I', 'E', 'W', 'C'], action="store", default='I',
                     help='Set loglevel used. Options: D - debug, I - info, E - error, W - warning, C - critical. DEFAULT: D')
 
-    parser.add_argument('-p', '--printDecode', action='store_true', default=False, required=False,
+    parser.add_argument('-p', '--printDecode', action='store_true', default=True, required=False,
                     help='Print decoded info into terminal. Default: False')
+
+    #python3.9 decode_postRun.py -f "../BeamTest0223/BeamData/Chip_230103/run17_protons120_20230224-090711.log" -o "../BeamTest0223/BeamData/Chip_230103/" -L D -p
 
     parser.add_argument
     args = parser.parse_args()
