@@ -139,11 +139,11 @@ def main(args,row,col,injectPix):
 
                 # Writes the hex version to hits
                 bitfile.write(f"{i}\t{str(binascii.hexlify(readout))}\n")
-                print(binascii.hexlify(readout))
+                #print(binascii.hexlify(readout))
 
                 # Added fault tolerance for decoding, the limits of which are set through arguments
                 try:
-                    hits = astro.decode_readout(readout, i, printer = True)
+                    hits = astro.decode_readout(readout, i, printer = False)
 
                 except IndexError:
                     # We write out the failed decode dataframe
@@ -180,9 +180,6 @@ def main(args,row,col,injectPix):
         astro.close_connection() # Closes SPI
         logger.info("Program terminated successfully")
     # END OF PROGRAM
-
-
-    
 
 if __name__ == "__main__":
 
@@ -221,11 +218,14 @@ if __name__ == "__main__":
     parser.add_argument('-R', '--rowrange', action='store', default=[0,33], type=int, nargs=2,
                     help =  'Loop over given range of rows. Default: 0 34')
 
+    parser.add_argument('-L', '--loglevel', action='store', default=40, type=int, required=False,
+                    help =  'Log output level CRITICAL ERROR WARNING INFO DEBUG NOTSET')
+
     parser.add_argument
     args = parser.parse_args()
     
     # Logging
-    loglevel = logging.INFO
+    loglevel = args.loglevel
     formatter = logging.Formatter('%(asctime)s:%(msecs)d.%(name)s.%(levelname)s:%(message)s')
     fh = logging.FileHandler(logname)
     fh.setFormatter(formatter)

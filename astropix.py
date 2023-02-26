@@ -6,6 +6,7 @@ Author: Autumn Bauman
 Maintained by: Amanda Steinhebel, amanda.l.steinhebel@nasa.gov
 
 02/2023 Jihee Kim added disable_pixel definition
+        Manoj Jadhav incresed threshold up to 800 mV
 """
 # Needed modules. They all import their own suppourt libraries, 
 # and eventually there will be a list of which ones are needed to run
@@ -253,7 +254,7 @@ class astropix2:
             if vthreshold is not None:
                 # Turns from mV to V with the 1V offset normally present
                 vthreshold = (vthreshold/1000) + 1 
-                if vthreshold > 1.5 or vthreshold < 0:
+                if vthreshold > 1.801 or vthreshold < 0:
                     logger.warning("Threshold voltage out of range of sensor!")
                     if vthreshold <= 0: 
                         vthreshold = 1.100

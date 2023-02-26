@@ -90,34 +90,12 @@ def main(args):
         noise_val = int(line.split(',')[2])
         col_val = int(line.split(',')[0])
         row_val = int(line.split(',')[1])
-        if noise_val > 5:
+        masking_threshold_in_pixels = args.noisethreshold
+        if noise_val > masking_threshold_in_pixels:        
             astro.disable_pixel(col_val,row_val)
         else:
             astro.enable_pixel(col_val,row_val)
         
-    #print(count_vals)
-    """
-    # threshold to define masking
-    threshold = 2 # assume random number
-
-    #loop over full array
-    col=0
-    row=0
-    for r in range(len(count_vals)):
-        #print(count_vals[r])
-        if count_vals[r] >= threshold:
-            row = int(r/35.)
-            col = int(r%35.)
-            #print(count_vals[r],row,col,"noisy")
-            #Enable single pixel in (col,row)
-            astro.disable_pixel(col,row)
-        else:
-            astro.enable_pixel(col,row)
-
-    for r in range(0,35,1):
-        for c in range(0,35,1):
-            astro.enable_pixel(c,r)
-    """
     max_errors = args.errormax
     i = 0
     errors = 0 # Sets the threshold 
@@ -159,7 +137,7 @@ def main(args):
 
     try: # By enclosing the main loop in try/except we are able to capture keyboard interupts cleanly
         
-        while errors <= max_errors: # Loop continues 
+        while True: # Loop continues before: while error => error_max 
 
             # This might be possible to do in the loop declaration, but its a lot easier to simply add in this logic
             if args.maxruns is not None:
@@ -294,6 +272,10 @@ if __name__ == "__main__":
 
     parser.add_argument('-L', '--loglevel', type=str, choices = ['D', 'I', 'E', 'W', 'C'], action="store", default='I',
                     help='Set loglevel used. Options: D - debug, I - info, E - error, W - warning, C - critical. DEFAULT: D')
+
+    parser.add_argument('-nt', '--noisethreshold', type=int, action="store", default=0,
+                    help='Set threshold on noisy pixel to mask it. DEFAULT: 0')
+
     """
     parser.add_argument('--ludicrous-speed', type=bool, action='store_true', default=False,
                     help="Fastest possible data collection. No decode, no output, no file.\
