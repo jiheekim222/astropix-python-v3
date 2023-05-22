@@ -9,7 +9,7 @@ Author: Amanda Steinhebel
         example) python3.9 pixelScan_injection.py -n "filename" -C 0 0 -R 0 0 -v 300.
 """
 
-from astropix import astropix2
+from astropix import astropix3
 import modules.hitplotter as hitplotter
 import os
 import binascii
@@ -42,9 +42,9 @@ def main(args,row,col, fpgaCon:bool=True, fpgaDiscon:bool=True):
         global astro 
         logger.info('Initiate FPGA connection')
         if boolInj:
-            astro = astropix2(inject=[row,col]) 
+            astro = astropix3(inject=[row,col]) 
         else:        
-            astro = astropix2()
+            astro = astropix3()
 
     astro.init_voltages(vthreshold=args.threshold) 
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--outdir', default='.', required=False,
                     help='Output Directory for all datafiles')
 
-    parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig',
+    parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig_v3',
                     help = 'filepath (in config/ directory) .yml file containing chip configuration. Default: config/testconfig.yml (All pixels off)')
 
     parser.add_argument('-t', '--threshold', type = float, action='store', default=None,

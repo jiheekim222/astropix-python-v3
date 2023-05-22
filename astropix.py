@@ -7,6 +7,8 @@ Maintained by: Amanda Steinhebel, amanda.l.steinhebel@nasa.gov
 
 02/2023 Jihee Kim added disable_pixel definition
         Manoj Jadhav incresed threshold up to 800 mV
+05/2023 Jihee Kim made changes to v3
+        chip version, class name, and initial voltage
 """
 # Needed modules. They all import their own suppourt libraries, 
 # and eventually there will be a list of which ones are needed to run
@@ -30,7 +32,7 @@ import logging
 from modules.setup_logger import logger
 logger = logging.getLogger(__name__)
 
-class astropix2:
+class astropix3:
 
     # Init just opens the chip and gets the handle. After this runs
     # asic_config also needs to be called to set it up. Seperating these 
@@ -127,7 +129,7 @@ class astropix2:
 
         # Get config values from YAML
         #set chip version
-        self.asic.chipversion=2
+        self.asic.chipversion=3
         #Define YAML path variables
         pathdelim=os.path.sep #determine if Mac or Windows separators in path name
         ymlpath=yaml
@@ -241,7 +243,7 @@ class astropix2:
         # Not in YAML
         # From nicholas's beam_test.py:
         # 3 = Vcasc2, 4=BL, 7=Vminuspix, 8=Thpix 
-        default_vdac = (8, [0, 0, 1.1, 1, 0, 0, 1, 1.100])
+        default_vdac = (8, [1.1, 0, 1.1, 1, 0, 0, 1, 1.100])
         
         # used to ensure this has been called in the right order:
         self._voltages_exist = True

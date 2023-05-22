@@ -9,7 +9,7 @@ Maintained by: Amanda Steinhebel, amanda.l.steinhebel@nasa.gov
 
 #from msilib.schema import File
 #from http.client import SWITCHING_PROTOCOLS
-from astropix import astropix2
+from astropix import astropix3
 import modules.hitplotter as hitplotter
 import os
 import binascii
@@ -57,7 +57,7 @@ def main(args):
         os.mkdir(args.outdir)
         
     # Prepare everything, create the object
-    astro = astropix2(inject=args.inject) #no updates in YAML
+    astro = astropix3(inject=args.inject) #no updates in YAML
 
     astro.init_voltages(vthreshold=args.threshold) #no updates in YAML
 
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--outdir', default='.', required=False,
                     help='Output Directory for all datafiles')
 
-    parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig',
+    parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig_v3',
                     help = 'filepath (in config/ directory) .yml file containing chip configuration. Default: config/testconfig.yml (All pixels off)')
 
     parser.add_argument('-ns', '--noisescaninfo', action='store', required=False, type=str, default = 'example_noise_scan_summary.csv',
