@@ -8,13 +8,14 @@ import matplotlib
 import pandas as pd
 import numpy as np
 import glob
+plt.style.use('classic')
 
 def main(args):
    
     # Path to noise scan data location
     path = args.noisedir
     # Find noise scan data and Read
-    filename = args.noisedir + '/noise_scan_summary_' + args.name +'_*.csv'
+    filename = args.noisedir + '/noise_scan_summary_' + args.name +'*.csv'
     file = glob.glob(filename)
     for f in file:
         df = pd.read_csv(f)
@@ -24,8 +25,10 @@ def main(args):
     df['Masking'] = 0
     df['Masking'] = np.where(df['Count'] > args.noisethreshold, 1, df['Masking']) 
     # Calculate how many pixels are good
-    s_npixels = '%.2f' % ((df['Stringent Masking'].value_counts()[0]/1225.) * 100.)
-    npixels = '%.2f' % ((df['Masking'].value_counts()[0]/1225.) * 100.)
+    s_npixels = '%.2f' % ((df['Stringent Masking'].value_counts()[0]/df.shape[0]) * 100.)
+    npixels = '%.2f' % ((df['Masking'].value_counts()[0]/df.shape[0]) * 100.)
+    print('The first 5 noisy pixels:')
+    print(df.nlargest(10, 'Count'))
     # Generate figures
     # Noise map
     fig, (ax1, ax2, ax3) = plt.subplots(ncols=3, figsize=(25, 6))
@@ -33,7 +36,7 @@ def main(args):
     fig.colorbar(p1[3], ax=ax1).set_label(label='Hits', size=15)
     ax1.set_xlabel('Col', fontsize=15)
     ax1.set_ylabel('Row', fontsize=15)
-    ax1.set_title(f"{args.name} noise map", fontsize=15)
+    ax1.set_title(f"{args.name} noise map \n voltage threshold {args.voltagethreshold} mV", fontsize=15)
     # Stringent masking map
     p2 = ax2.hist2d(x=df['Col'],y=df['Row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=df['Stringent Masking'], cmap='binary')
     fig.colorbar(p2[3], ax=ax2).set_label(label='Masking', size=15)
@@ -49,14 +52,14 @@ def main(args):
     # Draw figure
     plt.show()
     # Save figure 
-    plt.savefig(f"{args.outdir}/{args.name}_noise_map_nt_{args.noisethreshold}.png")
+    plt.savefig(f"{args.outdir}/{args.name}_noise_map_nt_{args.noisethreshold}_vt_{args.voltagethreshold}.png")
     
     # END OF PROGRAM
     
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Astropix Driver Code')
-    parser.add_argument('-n', '--name', default='chip', required=True,
+    parser.add_argument('-n', '--name', default='APS3-W2-S03', required=True,
                     help='chip ID that can be used in name of output file')
     
     parser.add_argument('-o', '--outdir', default='/home/labadmin/AstropPix/BeamTest2023/Plots', required=True,
@@ -67,6 +70,9 @@ if __name__ == "__main__":
 
     parser.add_argument('-t','--noisethreshold', type=int, required=True, default=5,
                     help = 'noise threshold to determine which pixel to be masked')
+    
+    parser.add_argument('-vt','--voltagethreshold', type=int, required=False, default=100,
+                    help = 'voltage threshold to pixel')
     
     parser.add_argument
     args = parser.parse_args()
