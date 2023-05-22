@@ -9,7 +9,7 @@ Author: Amanda Steinhebel
 
 #from msilib.schema import File
 #from http.client import SWITCHING_PROTOCOLS
-from astropix import astropix2
+from astropix import astropix3
 import modules.hitplotter as hitplotter
 import os
 import binascii
@@ -57,9 +57,9 @@ def main(args,row,col,injectPix):
 
     # Prepare everything, create the object
     if args.inject:
-        astro = astropix2(inject=injectPix) #enable injections
+        astro = astropix3(inject=injectPix) #enable injections
     else:
-        astro = astropix2() #initialize without enabling injections
+        astro = astropix3() #initialize without enabling injections
 
     astro.init_voltages(vthreshold=args.threshold) #no updates in YAML
 
@@ -144,6 +144,10 @@ def main(args,row,col,injectPix):
                 # Added fault tolerance for decoding, the limits of which are set through arguments
                 try:
                     hits = astro.decode_readout(readout, i, printer = False)
+                    if hits.empty:
+                        continue
+                    else:
+                        n_noise += 1
 
                 except IndexError:
                     # We write out the failed decode dataframe
@@ -153,7 +157,7 @@ def main(args,row,col,injectPix):
 
                 finally:
                     i += 1
-                    n_noise += 1
+                    #n_noise += 1
 
                     # If we are saving a csv this will write it out. 
                     if args.saveascsv:
@@ -190,7 +194,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--outdir', default='.', required=False,
                     help='Output Directory for all datafiles')
 
-    parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig',
+    parser.add_argument('-y', '--yaml', action='store', required=False, type=str, default = 'testconfig_v3',
                     help = 'filepath (in config/ directory) .yml file containing chip configuration. Default: config/testconfig.yml (All pixels off)')
     
     parser.add_argument('-c', '--saveascsv', action='store_true', 
