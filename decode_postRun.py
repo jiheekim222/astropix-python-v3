@@ -5,7 +5,7 @@ Author: Amanda Steinhebel
 amanda.l.steinhebel@nasa.gov
 """
 
-from astropix import astropix2
+from astropix import astropix3
 import glob
 import binascii
 import pandas as pd
@@ -46,7 +46,7 @@ def main(args):
     f_in = True if args.fileInput is not None else False
 
     #Create objet
-    astro = astropix2(offline=True)
+    astro = astropix3(offline=True)
 
     #Define output file path
     if args.outDir is not None:
@@ -123,13 +123,13 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Post-run decoding')
-    parser.add_argument('-f', '--fileInput', default=None, required=False,
+    parser.add_argument('-f', '--fileInput', default=None, required=True,
                     help='Input data file to decode')
 
     parser.add_argument('-d', '--dirInput', default=None, required=False,
                     help='Input directory of data files to decode')
 
-    parser.add_argument('-o', '--outDir', default=None, required=False,
+    parser.add_argument('-o', '--outDir', default='/home/labadmin/AstropPix/BeamTest0523/BeamData/chip_v3_APS3-W2-S03/', required=False,
                     help='Output Directory for all decoded datafiles. Defaults to directory raw data is saved in')
 
     parser.add_argument('-L', '--loglevel', type=str, choices = ['D', 'I', 'E', 'W', 'C'], action="store", default='I',

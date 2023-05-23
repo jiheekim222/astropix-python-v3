@@ -274,16 +274,16 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Astropix Driver Code')
-    parser.add_argument('-n', '--name', default='chip', required=True,
+    parser.add_argument('-n', '--name', default='chip_v3_APS3-W2-S03', required=True,
                     help='chip ID that can be used in name of output file ex) chip230103 or APCv2-230202')
 
     parser.add_argument('-l','--runnolist', nargs='+', required=True,
                     help = 'List run number(s) you would like to see')
 
-    parser.add_argument('-o', '--outdir', default='/home/labadmin/AstropPix/BeamTest0223/Plots/', required=False,
+    parser.add_argument('-o', '--outdir', default='/home/labadmin/AstropPix/BeamTest0523/Plots', required=False,
                     help='output directory for all png files')
 
-    parser.add_argument('-d', '--datadir', required=True, default = '/home/labadmin/AstropPix/BeamTest2023/BeamData/Chip_230103',
+    parser.add_argument('-d', '--datadir', required=True, default='/home/labadmin/AstropPix/BeamTest0523/BeamData/chip_v3_APS3-W2-S03',
                     help = 'input directory for beam data file')
     
     parser.add_argument('-td','--timestampdiff', type=float, required=False, default=0.5,
