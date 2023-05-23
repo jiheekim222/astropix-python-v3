@@ -169,6 +169,7 @@ def main(args,row,col,injectPix):
         # Write noise scan summary per pixel
         noisefile.write(f"{col},{row},{n_noise}\n")
         noisefile.flush()
+        print(f"{col},{row},{n_noise}\n")
     # Ends program cleanly when a keyboard interupt is sent.
     except KeyboardInterrupt:
         logger.info("Keyboard interupt. Program halt!")
@@ -243,7 +244,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     # Save noise summary to output file
-    noisepath = args.outdir + '/' + 'noise_scan_summary_' + args.name + '_' + time.strftime("%Y%m%d-%H%M%S") + '.csv'
+    noisepath = args.outdir + '/' + 'noise_scan_summary_' + args.name + time.strftime("%Y%m%d-%H%M%S") + '.csv'
     noisefile = open(noisepath,'w')
     noisewriter = csv.writer(noisefile)
     noisewriter.writerow(["Col", "Row", "Count"])
