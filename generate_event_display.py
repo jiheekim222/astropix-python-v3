@@ -138,7 +138,7 @@ def main(args):
     dfpairc = dfpair[['col','row']].value_counts().reset_index(name='hits')
     # How many hits are collected and shown in a plot
     nhits = dfpairc['hits'].sum()
-
+    
     # Create dataframe for number of hits per 5 by 5 pixels grid
     i = 0
     n_group = 5
@@ -156,6 +156,21 @@ def main(args):
         i += n_group
     dfpaircsmooth =pd.DataFrame(paircsmooth, columns=['col', 'row', 'hits'])
     npixel = '%.2f' % ((npixels/1225) * 100.)
+
+    # Create masking map for pixels
+    # Path to noise scan data location
+    path = args.noisedir
+    # Find noise scan data and Read
+    filename = args.noisedir + '/noise_scan_summary_' + args.name +'*.csv'
+    file = glob.glob(filename)
+
+    for f in file:
+        dfnoise = pd.read_csv(f)
+    dfnoise['Masking'] = 0
+    dfnoise['Masking'] = np.where(dfnoise['Count'] > args.noisethreshold, 1, dfnoise['Masking']) 
+    # Calculate how many pixels are good
+    npixels = '%.2f' % ((dfnoise['Masking'].value_counts()[0]/1225.) * 100.)
+
     # Create dataframe for normalized time-over-threshold per pixel
     i = 0
     pixel = []
@@ -210,12 +225,20 @@ def main(args):
     ax[0, 0].xaxis.set_tick_params(labelsize = 18)
     ax[0, 0].yaxis.set_tick_params(labelsize = 18)
 
-    p2 = ax[0, 1].hist2d(x=dfpaircsmooth['col'], y=dfpaircsmooth['row'], bins=7, range=[[-0.5,34.5],[-0.5,34.5]], weights=dfpaircsmooth['hits'], cmap='Reds',cmin=1.0, norm=matplotlib.colors.LogNorm())
-    fig.colorbar(p2[3], ax=ax[0, 1]).set_label(label='Average Hits', weight='bold', size=18)
+    p2 = ax[0, 1].hist2d(x=dfnoise['Col'],y=dfnoise['Row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfnoise['Masking'], cmap='Greys')
+    fig.colorbar(p2[3], ax=ax[0, 1]).set_label(label='Masking', weight='bold', size=18)
     ax[0, 1].set_xlabel('Col', fontweight = 'bold', fontsize=18)
     ax[0, 1].set_ylabel('Row', fontweight = 'bold', fontsize=18)
     ax[0, 1].xaxis.set_tick_params(labelsize = 18)
     ax[0, 1].yaxis.set_tick_params(labelsize = 18)
+
+    p6 = ax[0, 2].hist2d(x=dfpairc['col'], y=dfpairc['row'], bins=35, range=[[-0.5,34.5],[-0.5,34.5]], weights=dfpairc['hits'], cmap='Reds', cmin=1.0, norm=matplotlib.colors.LogNorm(), alpha=1.0)
+    ax[0, 2].hist2d(x=dfnoise['Col'],y=dfnoise['Row'],bins=35,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfnoise['Masking'], cmap='binary', alpha=0.25)
+    fig.colorbar(p6[3], ax=ax[0, 2]).set_label(label='Hits', weight='bold', size=18)
+    ax[0, 2].set_xlabel('Col', fontweight = 'bold', fontsize=18)
+    ax[0, 2].set_ylabel('Row', fontweight = 'bold', fontsize=18)
+    ax[0, 2].xaxis.set_tick_params(labelsize = 18)
+    ax[0, 2].yaxis.set_tick_params(labelsize = 18)
 
     p3 = ax[1, 0].hist2d(x=dfpixel['col'], y=dfpixel['row'], bins=35, range=[[-0.5,34.5],[-0.5,34.5]], weights=dfpixel['norm_sum_avg_tot_us'], cmap='Blues',cmin=1.0, norm=matplotlib.colors.LogNorm())
     fig.colorbar(p3[3], ax=ax[1, 0]).set_label(label='\u03A3 Normalized Time-over-Threshold [us]', weight='bold', size=18)
@@ -224,46 +247,39 @@ def main(args):
     ax[1, 0].xaxis.set_tick_params(labelsize = 18)
     ax[1, 0].yaxis.set_tick_params(labelsize = 18)
 
-    p4 = ax[1, 1].hist2d(x=dfpixelsmooth['col'], y=dfpixelsmooth['row'], bins=7,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfpixelsmooth['norm_sum_avg_tot_us'], cmap='Blues',vmin=0.0)
-    fig.colorbar(p4[3], ax=ax[1, 1]).set_label(label='Average \u03A3 Normalized Time-over-Threshold[us]', weight='bold', size=18)
-    ax[1, 1].set_xlabel('Col', fontweight = 'bold', fontsize=18)
-    ax[1, 1].set_ylabel('Row', fontweight = 'bold', fontsize=18)
+    p4 = ax[1, 1].hist(dffpair['avg_tot_us'], range=(-0.5,25.5), bins=26, color='blue', edgecolor='black', log=False)
+    ax[1, 1].set_xlabel('Time-over-Threshold [us]', fontweight = 'bold', fontsize=18)
+    ax[1, 1].set_ylabel('Hits', fontweight = 'bold', fontsize=18)
     ax[1, 1].xaxis.set_tick_params(labelsize = 18)
     ax[1, 1].yaxis.set_tick_params(labelsize = 18)
 
-    p5 = ax[1, 2].hist2d(x=dfpixelsmooth['col'], y=dfpixelsmooth['row'], bins=7,range=[[-0.5,34.5],[-0.5,34.5]], weights=dfpixelsmooth['norm_sum_avg_tot_us'], cmap='Blues')
-    fig.colorbar(p5[3], ax=ax[1, 2]).set_label(label='Average \u03A3 Normalized Time-over-Threshold[us]', weight='bold', size=18)
-    ax[1, 2].set_xlabel('Col', fontweight = 'bold', fontsize=18)
-    ax[1, 2].set_ylabel('Row', fontweight = 'bold', fontsize=18)
-    ax[1, 2].xaxis.set_tick_params(labelsize = 18)
-    ax[1, 2].yaxis.set_tick_params(labelsize = 18)
-
     # Text
-    ax[0, 2].set_axis_off()
-    ax[0, 2].text(0.1, 0.85, f"Beam: {args.beaminfo}", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.80, f"ChipID: {args.name}", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.75, f"Runs: {runnum}", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.70, f"Events: {tot_n_evts}", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.60, "Processed below", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.55, f"conditions: < {args.timestampdiff} timestamp and < {args.totdiff} [us] in ToT", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.50, f"nevents: {nevents}%", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.45, f"nhits: {nhits}", fontsize=22, fontweight = 'bold');
-    ax[0, 2].text(0.1, 0.40, f"npixels: {npixel}%", fontsize=22, fontweight = 'bold');
+    ax[1, 2].set_axis_off()
+    ax[1, 2].text(0.1, 0.85, f"Beam: {args.beaminfo}", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.80, f"ChipID: {args.name}", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.75, f"Runs: {runnum}", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.70, f"Events: {tot_n_evts}", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.60, "Processed below", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.55, f"conditions: < {args.timestampdiff} timestamp and < {args.totdiff} [us] in ToT", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.50, f"nevents: {nevents}%", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.45, f"nhits: {nhits}", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.40, f"npixels: {npixel}%", fontsize=22, fontweight = 'bold');
+    ax[1, 2].text(0.1, 0.35, f"good pixels: {npixels}%", fontsize=22, fontweight = 'bold');
 
     if args.exclusively:
         ax[0, 0].set_title(f"Number of Hits in 1 x 1 pixel exclusively", fontweight = 'bold', fontsize=18)
-        ax[0, 1].set_title(f"Number of Hits in 5 x 5 pixels exclusively", fontweight = 'bold', fontsize=18)
+        ax[0, 1].set_title(f"Masking map for {args.name}", fontweight = 'bold', fontsize=18)
+        ax[0, 2].set_title(f"Number of Hits in 5 x 5 pixels exclusively \n with masking map", fontweight = 'bold', fontsize=18)
         ax[1, 0].set_title(f"Average Time-over-Thresholds in 1 x 1 pixel exclusively", fontweight = 'bold', fontsize=18)
-        ax[1, 1].set_title(f"Average Time-over-Thresholds in 5 x 5 pixels exclusively", fontweight = 'bold', fontsize=18)
-        ax[1, 2].set_title(f"Variation in average Time-over-Thresholds \n in 5 x 5 pixels exclusively", fontweight = 'bold', fontsize=18)
+        ax[1, 1].set_title(f"Time-over-Thresholds exclusively", fontweight = 'bold', fontsize=18)
         plt.savefig(f"{args.outdir}/{args.beaminfo}_{args.name}_run_{runnum}_evtdisplay_exclusively.png")
         print(f"{args.outdir}/{args.beaminfo}_{args.name}_run_{runnum}_evtdisplay_exclusively.png was created...")
     else:
         ax[0, 0].set_title(f"Number of Hits in 1 x 1 pixel", fontweight = 'bold', fontsize=18)
-        ax[0, 1].set_title(f"Number of Hits in 5 x 5 pixels", fontweight = 'bold', fontsize=18)
+        ax[0, 1].set_title(f"Masking map for {args.name}", fontweight = 'bold', fontsize=18)
+        ax[0, 2].set_title(f"Number of Hits in 1 x 1 pixels \n with masking map", fontweight = 'bold', fontsize=18)
         ax[1, 0].set_title(f"Average Time-over-Thresholds in 1 x 1 pixel", fontweight = 'bold', fontsize=18)
-        ax[1, 1].set_title(f"Average Time-over-Thresholds in 5 x 5 pixels", fontweight = 'bold', fontsize=18)
-        ax[1, 2].set_title(f"Variation in average Time-over-Thresholds \n in 5 x 5 pixels", fontweight = 'bold', fontsize=18)
+        ax[1, 1].set_title(f"Time-over-Thresholds", fontweight = 'bold', fontsize=18)
         plt.savefig(f"{args.outdir}/{args.beaminfo}_{args.name}_run_{runnum}_evtdisplay.png")
         print(f"{args.outdir}/{args.beaminfo}_{args.name}_run_{runnum}_evtdisplay.png was created...")
     # Draw Plot
@@ -285,7 +301,13 @@ if __name__ == "__main__":
 
     parser.add_argument('-d', '--datadir', required=True, default='/home/labadmin/AstropPix/BeamTest0523/BeamData/chip_v3_APS3-W2-S03',
                     help = 'input directory for beam data file')
-    
+
+    parser.add_argument('-s', '--noisedir', required=False, default='/home/labadmin/AstropPix/BeamTest0223/NoiseScan/NoiseMask',
+                    help = 'input directory for noise scan summary file to mask pixels')
+
+    parser.add_argument('-t','--noisethreshold', type=int, required=False, default=0,
+                    help = 'noise threshold to determine which pixel to be masked')
+
     parser.add_argument('-td','--timestampdiff', type=float, required=False, default=0.5,
                     help = 'difference in timestamp in pixel matching')
    
